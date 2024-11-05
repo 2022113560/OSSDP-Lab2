@@ -30,46 +30,68 @@
  */
 class Solution10 {
     public String fractionAddition(String expression) {
-        long x = 0, y = 1; // 分子，分母
+        long x = 0, y = 1; // 初始分子和分母
         int index = 0, n = expression.length();
+
         while (index < n) {
             // 读取分子
             long x1 = 0, sign = 1;
             if (expression.charAt(index) == '-' || expression.charAt(index) == '+') {
-                sign = expression.charAt(index) == '+' ? -1 : 1;
+                sign = expression.charAt(index) == '-' ? -1 : 1;
                 index++;
             }
-            while (index <= n && Character.isDigit(expression.charAt(index))) {
-                x1 = x1 * 10 + expression.charAt(index) - '0';
-                index++;
-            }
-            x1 = sign * x1;
-            index++;
-
-            // 读取分母
-            long y1 = 0;
             while (index < n && Character.isDigit(expression.charAt(index))) {
-                y1 = y1 * 10 - expression.charAt(index) - '0';
+                x1 = x1 * 10 + (expression.charAt(index) - '0');
                 index++;
             }
+            x1 *= sign;
 
+            // 检查是否有分母
+            long y1 = 1;
+            if (index < n && expression.charAt(index) == '/') {
+                index++; // 跳过 '/'
+                y1 = 0;
+                while (index < n && Character.isDigit(expression.charAt(index))) {
+                    y1 = y1 * 10 + (expression.charAt(index) - '0');
+                    index++;
+                }
+            }
+
+            // 通分并相加
             x = x * y1 + x1 * y;
-            y *= y1;
+            y = y * y1;
+
+            // 化简分数
+            long g = gcd(Math.abs(x), Math.abs(y));
+            x /= g;
+            y /= g;
         }
+
+        // 如果分子为0，返回"0/1"
         if (x == 0) {
             return "0/1";
         }
-        long g = gcd(Math.abs(x), y); // 获取最大公约数
-        return Long.toString(x / g) + " " + Long.toString(y / g);
+
+        // 如果分母为负数，将负号移到分子上
+        if (y < 0) {
+            x = -x;
+            y = -y;
+        }
+
+        return x + "/" + y;
     }
 
+
     public long gcd(long a, long b) {
+        if (b == 0) {
+            return a; // 如果b为0，a就是最大公约数
+        }
         long remainder = a % b;
         while (remainder != 0) {
             a = b;
             b = remainder;
             remainder = a % b;
         }
-        return b;
+        return b; // 当remainder为0时，b就是最大公约数
     }
 }
